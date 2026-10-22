@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  user
+}
+
+enum Categoria {
+  maquillaje
+  capilar
+}
+
+enum TipoCliente {
+  Cliente
+  Revendedor
+}
+
+enum EstadoPedido {
+  pendiente
+  confirmado
+  cancelado
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  nombre    String   @db.VarChar(100)
+  email     String   @unique @db.VarChar(150)
+  password  String
+  role      Role     @default(user)
+  createdAt DateTime @default(now()) @map("created_at")
+  pedidos   Pedido[]
+
+  @@map("users")
+}
+
+model Producto {
+  id          Int       @id @default(autoincrement())
+  nombre      String    @db.VarChar(120)
+  marca       String    @db.VarChar(50)
+  categoria   Categoria
+  precio      Int
+  imagen      String    @db.VarChar(300)
+  descripcion String?   @db.VarChar(500)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  pedidos     Pedido[]
+
+  @@map("productos")
+}
+
+model Pedido {
+  id          Int          @id @default(autoincrement())
+  cantidad    Int
+  telefono    String       @db.VarChar(15)
+  tipoCliente TipoCliente  @map("tipo_cliente")
+  mensaje     String?      @db.VarChar(500)
+  estado      EstadoPedido @default(pendiente)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  userId      Int          @map("user_id")
+  productoId  Int          @map("producto_id")
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  producto    Producto     @relation(fields: [productoId], references: [id], onDelete: Restrict)
+
+  @@map("pedidos")
+}
