@@ -1,0 +1,130 @@
+### Peticiones de prueba para la API de Sky V Cosmetics
+### Se usan con la extensión "REST Client" de VS Code: clic en "Send Request" sobre cada una.
+### Para probar producción cambia @host por la URL de Render.
+
+@host = http://localhost:4000
+# Después de hacer login, copia aquí el "token" que te responde la API (sin comillas)
+@tokenCliente = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Miwicm9sZSI6InVzZXIiLCJpYXQiOjE3OTI3MzE2NTMsImV4cCI6MTc5MjgxODA1M30.teJzKO2LhijrqVfFylu2-Iqf16Br-nUSTh83eu9y11g
+@tokenAdmin = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzkyNzMxNzY4LCJleHAiOjE3OTI4MTgxNjh9.n637b4MitylZDQFt8SiWAQaMuqu-zribPZA0vOWiQbo
+
+### 1. Salud de la API
+GET {{host}}/api/health
+
+### 2. Catálogo (público, paginado)
+GET {{host}}/api/productos?page=1&limit=6
+
+### 3. Catálogo con filtros combinados
+GET {{host}}/api/productos?categoria=capilar&minPrecio=30000&maxPrecio=40000
+
+### 4. Un producto
+GET {{host}}/api/productos/1
+
+### 5. Producto que no existe -> 404
+GET {{host}}/api/productos/9999
+
+### 6. Registro de usuario nuevo -> 201
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "nombre": "Usuaria Nueva",
+  "email": "nueva@correo.com",
+  "password": "Clave1234"
+}
+
+### 7. Registro con el mismo correo -> 409
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "nombre": "Usuaria Nueva",
+  "email": "nueva@correo.com",
+  "password": "Clave1234"
+}
+
+### 8. Login del cliente de prueba -> copia el token en @tokenCliente
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "cliente@skyv.com",
+  "password": "Cliente123*"
+}
+
+### 9. Login del admin -> copia el token en @tokenAdmin
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@skyv.com",
+  "password": "Admin123*"
+}
+
+### 10. Login con contraseña incorrecta -> 401 (mensaje genérico)
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "cliente@skyv.com",
+  "password": "otraClave"
+}
+
+### 11. ¿Quién soy? (requiere token)
+GET {{host}}/api/auth/me
+Authorization: Bearer {{tokenCliente}}
+
+### 12. Borrar producto SIN token -> 401
+DELETE {{host}}/api/productos/1
+
+### 13. Borrar producto como CLIENTE -> 403
+DELETE {{host}}/api/productos/1
+Authorization: Bearer {{tokenCliente}}
+
+### 14. Crear producto como ADMIN -> 201
+POST {{host}}/api/productos
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "nombre": "Producto de prueba",
+  "marca": "kaba",
+  "categoria": "capilar",
+  "precio": 25000,
+  "imagen": "/img/productos_kaba/ShampooCebolla.png"
+}
+
+### 15. Crear producto con datos inválidos -> 400
+POST {{host}}/api/productos
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "nombre": "",
+  "precio": -5
+}
+
+### 16. Crear pedido como cliente (el userId sale del token, aunque lo mandes) -> 201
+POST {{host}}/api/pedidos
+Authorization: Bearer {{tokenCliente}}
+Content-Type: application/json
+
+{
+  "productoId": 1,
+  "cantidad": 2,
+  "telefono": "3001234567",
+  "tipoCliente": "Cliente",
+  "mensaje": "¿Tienen envío a Medellín?",
+  "userId": 999
+}
+
+### 17. Mis pedidos (solo los del cliente)
+GET {{host}}/api/pedidos/mias
+Authorization: Bearer {{tokenCliente}}
+
+### 18. Todos los pedidos como cliente -> 403
+GET {{host}}/api/pedidos
+Authorization: Bearer {{tokenCliente}}
+
+### 19. Todos los pedidos como admin -> 200
+GET {{host}}/api/pedidos
+Authorization: Bearer {{tokenAdmin}}

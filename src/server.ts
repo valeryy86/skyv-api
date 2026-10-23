@@ -1,15 +1,8 @@
-import "dotenv/config";
-import express from "express";
+import { createApp } from "./app";
+import { env } from "./infrastructure/config/env";
 
-// Versión TEMPORAL del Día 1: solo para comprobar que todo funciona.
-// El Día 2 la reemplazas por la versión definitiva.
-const app = express();
+const app = createApp();
 
-app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok" });
-});
-
-const PORT = Number(process.env.PORT ?? 4000);
-app.listen(PORT, () => {
-  console.log(`API escuchando en http://localhost:${PORT}`);
+app.listen(env.PORT, () => {
+  console.log(`API de Sky V Cosmetics escuchando en http://localhost:${env.PORT}`);
 });
