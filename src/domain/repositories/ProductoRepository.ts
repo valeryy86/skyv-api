@@ -12,4 +12,5 @@ export interface ProductoRepository {
   create(data: CrearProductoData): Promise<Producto>;
   update(id: number, data: ActualizarProductoData): Promise<Producto>;
   delete(id: number): Promise<void>;
+  tienePedidos(id: number): Promise<boolean>;
 }

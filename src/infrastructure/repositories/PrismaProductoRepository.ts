@@ -50,4 +50,8 @@ export class PrismaProductoRepository implements ProductoRepository {
   async delete(id: number): Promise<void> {
     await prisma.producto.delete({ where: { id } });
   }
+    async tienePedidos(id: number): Promise<boolean> {
+    const cantidad = await prisma.pedido.count({ where: { productoId: id } });
+    return cantidad > 0;
+  }
 }

@@ -1,4 +1,4 @@
-import { NotFoundError } from "../../domain/errors/AppError";
+import { ConflictError, NotFoundError } from "../../domain/errors/AppError";
 import { PaginatedResult } from "../../domain/entities/Paginacion";
 import {
   ActualizarProductoData,
@@ -34,8 +34,11 @@ export class ProductosService {
     return this.productos.update(id, data);
   }
 
-  async eliminar(id: number): Promise<void> {
-    await this.obtener(id); // lanza 404 si no existe
+    async eliminar(id: number): Promise<void> {
+    await this.obtener(id); 
+    if (await this.productos.tienePedidos(id)) {
+      throw new ConflictError("No se puede eliminar este producto porque ya tiene pedidos.");
+    }
     await this.productos.delete(id);
   }
 }
